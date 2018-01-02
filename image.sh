@@ -4,7 +4,7 @@ if [ ! -f /tmp/raspbian/.setup ]; then
   echo "Fetching image"
   mkdir -p /tmp/raspbian
 
-  curl -L https://downloads.raspberrypi.org/raspbian_lite_latest > /tmp/raspbian/image.zip
+  curl -L https://downloads.raspberrypi.org/raspbian_lite/images/raspbian_lite-2017-07-05/2017-07-05-raspbian-jessie-lite.zip > /tmp/raspbian/image.zip
   unzip /tmp/raspbian/image.zip -d /tmp/raspbian
   touch /tmp/raspbian/.setup
 fi
@@ -33,6 +33,8 @@ done
 echo "Enabling SSH"
 diskutil mountDisk /dev/$disk
 touch /Volumes/boot/ssh
+orig="$(head -n1 /Volumes/boot/cmdline.txt) cgroup_enable=cpuset cgroup_memory=1"
+echo $orig > /Volumes/boot/cmdline.txt
 
 echo "Ejecting $disk"
 sudo diskutil eject /dev/$disk
