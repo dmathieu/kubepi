@@ -24,3 +24,16 @@ EOF
 ./_network.sh $USER $address
 
 ./_kube.sh $USER $address
+
+ssh $USER@$address << EOF
+if [[ \$(ifconfig | grep 10.0.0.1) ]] ; then
+  if [ -d /etc/kubernetes/manifests ]; then
+    echo "Kubeadm already initialized. Nothing to do"
+  else
+    echo "Initializing kubeadm"
+    sudo kubeadm init
+  fi
+else
+  echo "Change to the permanent network and reboot the machine"
+fi
+EOF
