@@ -3,10 +3,13 @@
 user=$1
 address=$2
 
-read -p "What is the wifi network? " -r < /dev/tty
-wifi=$REPLY
-read -p "What is the wifi password? " -r < /dev/tty
-wifipwd=$REPLY
+if [ ! -f .config/wifi ]; then
+  read -p "What is the wifi network? " -r < /dev/tty
+  echo "wifi=$REPLY" > .config/wifi
+  read -p "What is the wifi password? " -r < /dev/tty
+  echo "wifipwd=$REPLY" >> .config/wifi
+fi
+source .config/wifi
 
 conf="/etc/wpa_supplicant/wpa_supplicant.conf"
 ssh $user@$address << EOF
