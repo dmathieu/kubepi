@@ -43,3 +43,6 @@ EOF
 
 scp $USER@$address:admin.conf .config/admin.conf
 mv .config/admin.conf ~/.kube/raspberry
+kubectl config use-context kubernetes-admin@kubernetes
+
+./_flannel.sh
