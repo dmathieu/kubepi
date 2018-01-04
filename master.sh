@@ -6,7 +6,6 @@ address=$1
 ./_setup.sh $USER $address
 
 ssh $USER@$address << EOF
-
 if [[ \$(sudo grep "$host" /etc/hostname) ]] ; then
   echo "Hostname already configured"
 else
@@ -17,7 +16,7 @@ else
   echo "Setting hostname to $host"
   sudo hostname $host
   sudo sh -c 'echo $host > /etc/hostname'
-  sudo sh -c 'echo 127.0.1.1 $hostname >> /etc/hosts'
+  sudo sh -c 'echo "127.0.1.1 $host" >> /etc/hosts'
 fi
 EOF
 
