@@ -31,7 +31,10 @@ if [[ \$(ifconfig | grep 10.0.0.1) ]] ; then
     echo "Kubeadm already initialized. Nothing to do"
   else
     echo "Initializing kubeadm"
-    sudo kubeadm init
+    sudo kubeadm init \
+      --pod-network-cidr 10.244.0.0/16 \
+      --apiserver-advertise-address 10.0.0.1 \
+      --apiserver-cert-extra-sans $address
     mkdir ~/pki
     sudo cp /etc/kubernetes/pki/* ~/pki
     sudo chown $USER ~/pki/*
@@ -42,7 +45,7 @@ else
 fi
 EOF
 
-scp -r $USER@$address:pki/ .config/pki
+scp -r $USER@$address:pki/* .config/pki
 
 kubectl config set-cluster raspberry \
   --server=https://192.168.1.4:6443 \
