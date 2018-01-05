@@ -32,8 +32,9 @@ if [[ \$(ifconfig | grep 10.0.0.1) ]] ; then
   else
     echo "Initializing kubeadm"
     sudo kubeadm init
-    sudo cp /etc/kubernetes/admin.conf ~/admin.conf
-    sudo chown $USER admin.conf
+    mkdir ~/pki
+    sudo cp /etc/kubernetes/pki/* ~/pki
+    sudo chown $USER ~/pki/*
   fi
 
 else
@@ -41,8 +42,19 @@ else
 fi
 EOF
 
-scp $USER@$address:admin.conf .config/admin.conf
-mv .config/admin.conf ~/.kube/raspberry
-kubectl config use-context kubernetes-admin@kubernetes
+scp -r $USER@$address:pki/ .config/pki
+
+kubectl config set-cluster raspberry \
+  --server=https://192.168.1.4:6443 \
+  --certificate-authority=./.config/pki/ca.crt \
+  --embed-certs=true
+kubectl config set-credentials raspberry \
+  --client-certificate=./.config/pki/apiserver-kubelet-client.crt \
+  --client-key=./.config/pki/apiserver-kubelet-client.key \
+  --embed-certs=true
+kubectl config set-context raspberry \
+  --cluster=raspberry \
+  --user=raspberry
+kubectl config use-context raspberry
 
 ./_flannel.sh
