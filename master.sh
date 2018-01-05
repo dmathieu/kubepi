@@ -45,7 +45,8 @@ else
 fi
 EOF
 
-scp -r $USER@$address:pki/* .config/pki
+rm -rf .config/pki
+scp -r $USER@$address:pki/ .config/pki
 
 kubectl config set-cluster raspberry \
   --server=https://192.168.1.4:6443 \
