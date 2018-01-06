@@ -27,7 +27,7 @@ EOF
 
 ssh $USER@$address << EOF
 if [[ \$(ifconfig | grep 10.0.0.1) ]] ; then
-  if [ -d /etc/kubernetes/manifests ]; then
+  if [ -f /etc/kubernetes/kubelet.conf ]; then
     echo "Kubeadm already initialized. Nothing to do"
   else
     echo "Initializing kubeadm"
