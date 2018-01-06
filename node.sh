@@ -27,7 +27,7 @@ EOF
 kubectl config use-context raspberry
 kubectl config set-cluster master \
   --kubeconfig=.config/node.conf \
-  --server=https://192.168.1.4:6443 \
+  --server=https://10.0.0.1:6443 \
   --certificate-authority=./.config/pki/ca.crt \
   --embed-certs=true
 kubectl config set-context master \
