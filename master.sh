@@ -49,7 +49,7 @@ rm -rf .config/pki
 scp -r $USER@$address:pki/ .config/pki
 
 kubectl config set-cluster raspberry \
-  --server=https://192.168.1.4:6443 \
+  --server=https://$address:6443 \
   --certificate-authority=./.config/pki/ca.crt \
   --embed-certs=true
 kubectl config set-credentials raspberry \
