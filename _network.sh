@@ -63,10 +63,12 @@ else
   echo "Setting up lan to wifi forwarding"
   echo "net.ipv4.ip_forward=1" | sudo tee -a /etc/sysctl.conf
 
-  echo "
+  echo '#!/bin/sh
 iptables -t nat -A POSTROUTING -o wlan0 -j MASQUERADE
 iptables -A FORWARD -i wlan0 -o eth0 -m state --state RELATED,ESTABLISHED -j ACCEPT
 iptables -A FORWARD -i eth0 -o wlan0 -j ACCEPT
-" | sudo tee $rcConf
+' | sudo tee $rcConf
+sudo chmod +x $rcConf
+sudo systemctl daemon-reload
 fi
 EOF
