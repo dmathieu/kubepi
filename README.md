@@ -54,3 +54,8 @@ Adding the `--ingress` flag to the node.hs command will turn it into a load bala
 * The node will run [ingress-nginx](https://github.com/kubernetes/ingress-nginx)
 
 You will then be able to setup ingress rules on your deployments to redirect traffic to pods.
+
+### Pointing hostnames to the cluster
+
+I am using [dnsmasq](http://www.thekelleys.org.uk/dnsmasq/doc.html) to point a wildcard top-level domain `.kube` to the ingress pod.  
+I can then use hostname-routing to go to one app or another one.
