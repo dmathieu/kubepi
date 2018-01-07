@@ -40,7 +40,17 @@ At the end of this script, a new `raspberry` cluster will be configured locally.
 So the setup needs to happen in 2 steps. The first time, connect the node to the main DHCP server (your main wifi router) using ethernet.  
 At the end of the DHCP setup, the script will tell you to reboot the machine on the permanent network. Rerunning the script will then pick things up.
 
-### node.sh [node name] [node ip]
+### node.sh [node name] [node ip] [--ingress]
 
 This script will setup a node. You can set any name you wish.  
 The node will automatically be configured to connect to the master node on `10.0.0.1`.
+
+#### --ingress
+
+You may want to transform one of the nodes into a Load Balancer, so your apps can send HTTP traffic and you can open that in a browser more easily.  
+Adding the `--ingress` flag to the node.hs command will turn it into a load balancer:
+
+* The node will connect to the wifi network
+* The node will run [ingress-nginx](https://github.com/kubernetes/ingress-nginx)
+
+You will then be able to setup ingress rules on your deployments to redirect traffic to pods.
