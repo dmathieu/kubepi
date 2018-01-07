@@ -3,8 +3,25 @@
 masterHost="kubemaster"
 host=$1
 address=$2
+isIngress=0
+
+while (( $# > 0 ))
+do
+  case "$1" in
+    (--ingress)
+      isIngress=1
+      ;;
+    (*)
+      ;;
+  esac
+  shift
+done
 
 ./_setup.sh $USER $address
+
+if [ isIngress ]; then
+  ./_wifi.sh $USER $address
+fi
 
 ssh $USER@$address << EOF
 if [[ \$(sudo grep "$host" /etc/hostname) ]] ; then
@@ -58,3 +75,8 @@ ssh $USER@$address << EOF
     sudo kubeadm join --token $token --discovery-file node.conf
   fi
 EOF
+
+if [ isIngress ]; then
+  kubectl label nodes $host nodeIngress=yes --overwrite
+  kubectl apply -f manifests/nginx/
+fi
