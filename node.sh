@@ -83,7 +83,7 @@ if [ $isIngress == 1 ]; then
     echo "Adding $wlanAddress to service.yml"
 
     echo "  externalIPs:
-    - 192.168.1.15" >> manifests/nginx/service.yml
+    - $wlanAddress" >> manifests/nginx/service.yml
   fi
 
   kubectl label nodes $host nodeIngress=yes --overwrite
