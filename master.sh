@@ -60,5 +60,4 @@ kubectl config set-context raspberry \
   --cluster=raspberry \
   --user=raspberry
 kubectl config use-context raspberry
-
-./_flannel.sh
+kubectl apply -f manifests/flannel.yml
