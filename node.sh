@@ -19,7 +19,7 @@ done
 
 ./_setup.sh $USER $address
 
-if [ isIngress == 1 ]; then
+if [ $isIngress == 1 ]; then
   ./_wifi.sh $USER $address
 fi
 
@@ -76,7 +76,7 @@ ssh $USER@$address << EOF
   fi
 EOF
 
-if [ isIngress == 1 ]; then
+if [ $isIngress == 1 ]; then
   wlanAddress=$(ssh $USER@$address sudo ifconfig wlan0 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}')
 
   if [[ ! $(grep "$wlanAddress" manifests/nginx/service.yml) ]] ; then
