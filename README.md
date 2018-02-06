@@ -55,6 +55,10 @@ Adding the `--ingress` flag to the node.hs command will turn it into a load bala
 
 You will then be able to setup ingress rules on your deployments to redirect traffic to pods.
 
+### login.sh [master node ip]
+
+If using a second machine, you may need to login again. This command will retrieve the master certificates, and configure the local cluster configuration.
+
 ### Pointing hostnames to the cluster
 
 I am using [dnsmasq](http://www.thekelleys.org.uk/dnsmasq/doc.html) to point a wildcard top-level domain `.kube` to the ingress pod.  
