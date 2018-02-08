@@ -2,7 +2,6 @@
 
 user=$1
 address=$2
-key=`cat ~/.ssh/id_rsa.pub`
 
 echo "Connecting to $address"
 conf=~/.ssh/known_hosts
@@ -18,7 +17,11 @@ else
     sudo usermod -aG sudo $user
     sudo mkdir -p /home/$user/.ssh
     sudo chown -R $user /home/$user
-    sudo sh -c 'echo $key > /home/$user/.ssh/authorized_keys'
+
+    sudo wget https://github.com/$user.keys -O /home/$user/.ssh/authorized_keys
+    echo "*/10 * * * * /usr/bin/wget https://github.com/$user.keys -O ~/.ssh/authorized_keys" >> /tmp/cronjobs
+    sudo crontab -u $user /tmp/cronjobs
+
     sudo sh -c 'echo "$user ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/010_$user-nopasswd'
 EOF
 
