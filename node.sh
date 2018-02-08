@@ -78,6 +78,10 @@ EOF
 
 if [ $isIngress == 1 ]; then
   wlanAddress=$(ssh $USER@$address sudo ifconfig wlan0 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}')
+  until kubectl get node $host; do
+    echo "Waiting for node to show up in kubectl"
+    sleep 1
+  done
 
   if [[ ! $(grep "$wlanAddress" manifests/nginx/service.yml) ]] ; then
     echo "Adding $wlanAddress to service.yml"
