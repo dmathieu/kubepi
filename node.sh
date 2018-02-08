@@ -91,5 +91,6 @@ if [ $isIngress == 1 ]; then
   fi
 
   kubectl label nodes $host nodeIngress=yes --overwrite
+  kubectl create namespace ingress-nginx || echo "Namespace already exists"
   kubectl apply -f manifests/nginx/
 fi
