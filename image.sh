@@ -32,6 +32,11 @@ done
 
 echo "Enabling SSH"
 diskutil mountDisk /dev/$disk
+while [ ! -d /Volumes/boot ]; do
+  echo "Waiting for mount"
+  sleep 1
+done
+
 touch /Volumes/boot/ssh
 orig="$(head -n1 /Volumes/boot/cmdline.txt) cgroup_enable=cpuset cgroup_memory=1"
 echo $orig > /Volumes/boot/cmdline.txt
