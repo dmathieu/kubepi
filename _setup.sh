@@ -19,6 +19,7 @@ else
     sudo chown -R $user /home/$user
 
     sudo wget https://github.com/$user.keys -O /home/$user/.ssh/authorized_keys
+    sudo chown $user:$user /home/$user/.ssh/authorized_keys
     echo "*/10 * * * * /usr/bin/wget https://github.com/$user.keys -O ~/.ssh/authorized_keys" >> /tmp/cronjobs
     sudo crontab -u $user /tmp/cronjobs
 
