@@ -13,34 +13,56 @@ image=`find /tmp/raspbian/*.img`
 
 
 echo "Finding SD card"
-diskutil list
+if [ "$(uname -s)" == "Darwin" ]; then
+  diskutil list
+else
+  lsblk
+fi
 
-read -p "Identify your sd card's disk. (e.g. disk5) " < /dev/tty
+read -p "Identify your sd card's disk. (e.g. disk5 or mmcblk0) " < /dev/tty
 echo
 disk=$REPLY
 
-echo "Unmounting $disk"
-diskutil unmountDisk /dev/$disk
 
-echo "Imaging $image to $disk (don't exit. It wouldn't stop the process)"
-sudo dd bs=1m if=$image of=/dev/$disk conv=sync &
+if [ "$(uname -s)" == "Darwin" ]; then
+  echo "Unmounting $disk"
+  diskutil unmountDisk /dev/$disk
+else
+  shopt -s dotglob
+  find /media/$USER/* -prune -type d | while IFS= read -r d; do 
+    echo "Unmounting $d"
+    sudo umount $d
+  done
+fi
 
-while :;do
-  sudo killall -INFO dd || break
-  sleep 1
-done
+echo "Imaging $image to $disk"
+sudo dd bs=4M if=$image of=/dev/$disk conv=fsync
 
 echo "Enabling SSH"
-diskutil mountDisk /dev/$disk
-while [ ! -d /Volumes/boot ]; do
-  echo "Waiting for mount"
-  sleep 1
-done
+if [ "$(uname -s)" == "Darwin" ]; then
+  diskutil mountDisk /dev/$disk
+  while [ ! -d /Volumes/boot ]; do
+    echo "Waiting for mount"
+    sleep 1
+  done
 
-touch /Volumes/boot/ssh
-orig="$(head -n1 /Volumes/boot/cmdline.txt) cgroup_enable=cpuset cgroup_memory=1"
-echo $orig > /Volumes/boot/cmdline.txt
+  touch /Volumes/boot/ssh
+  orig="$(head -n1 /Volumes/boot/cmdline.txt) cgroup_enable=cpuset cgroup_memory=1"
+  echo $orig > /Volumes/boot/cmdline.txt
 
-echo "Ejecting $disk"
-sudo diskutil eject /dev/$disk
-echo "All done!"
+  echo "Ejecting $disk"
+  sudo diskutil eject /dev/$disk
+  echo "All done!"
+else
+  sudo mkdir -p /media/raspberry
+  sudo mount /dev/${disk}p1 /media/raspberry
+
+  sudo touch /media/raspberry/ssh
+  orig="$(sudo head -n1 /media/raspberry/cmdline.txt) cgroup_enable=cpuset cgroup_memory=1"
+  echo $orig | sudo tee /media/raspberry/cmdline.txt
+
+  echo "Ejecting $disk"
+  sudo umount /media/raspberry
+  sudo rm -rf /media/raspberry
+  echo "All done!"
+fi
