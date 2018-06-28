@@ -4,12 +4,16 @@ masterHost="kubemaster"
 host=$1
 address=$2
 isIngress=0
+isStorage=0
 
 while (( $# > 0 ))
 do
   case "$1" in
     (--ingress)
       isIngress=1
+      ;;
+    (--storage)
+      isStorage=1
       ;;
     (*)
       ;;
@@ -78,4 +82,8 @@ EOF
 
 if [ $isIngress == 1 ]; then
   ./_ingress.sh $USER $address $host
+fi
+
+if [ $isStorage == 1 ]; then
+  ./_storage.sh $USER $address
 fi
