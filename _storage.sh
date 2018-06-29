@@ -18,3 +18,10 @@ ssh $user@$address << EOF
     sudo exportfs -a
   fi
 EOF
+
+if [[ ! $(grep "$address" manifests/storage.yml) ]] ; then
+  echo "Adding $address to storage.yml"
+  sed -i -e "s/{{HOSTNAME}}/$address/g" manifests/storage.yml
+fi
+
+kubectl apply -f manifests/storage.yml
