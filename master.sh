@@ -20,9 +20,7 @@ else
 fi
 EOF
 
-./_wifi.sh $USER $address
 ./_network.sh $USER $address
-
 ./_kube.sh $USER $address
 
 ssh $USER@$address << EOF

@@ -1,5 +1,19 @@
 #!/bin/bash -e
 
+isWifi=0
+
+while (( $# > 0 ))
+do
+  case "$1" in
+    (--wifi)
+      isWifi=1
+      ;;
+    (*)
+      ;;
+  esac
+  shift
+done
+
 if [ ! -f /tmp/raspbian/.setup ]; then
   echo "Fetching image"
   mkdir -p /tmp/raspbian
@@ -13,56 +27,53 @@ image=`find /tmp/raspbian/*.img`
 
 
 echo "Finding SD card"
-if [ "$(uname -s)" == "Darwin" ]; then
-  diskutil list
-else
-  lsblk
-fi
+lsblk
 
 read -p "Identify your sd card's disk. (e.g. disk5 or mmcblk0) " < /dev/tty
 echo
 disk=$REPLY
 
-
-if [ "$(uname -s)" == "Darwin" ]; then
-  echo "Unmounting $disk"
-  diskutil unmountDisk /dev/$disk
-else
-  shopt -s dotglob
-  find /media/$USER/* -prune -type d | while IFS= read -r d; do 
-    echo "Unmounting $d"
-    sudo umount $d
-  done
-fi
+shopt -s dotglob
+find /media/$USER/* -prune -type d | while IFS= read -r d; do 
+  echo "Unmounting $d"
+  sudo umount $d
+done
 
 echo "Imaging $image to $disk"
 sudo dd bs=4M if=$image of=/dev/$disk conv=fsync
 
 echo "Enabling SSH"
-if [ "$(uname -s)" == "Darwin" ]; then
-  diskutil mountDisk /dev/$disk
-  while [ ! -d /Volumes/boot ]; do
-    echo "Waiting for mount"
-    sleep 1
-  done
+sudo mkdir -p /media/$USER/boot
+sudo mount /dev/${disk}p1 /media/$USER/boot
 
-  touch /Volumes/boot/ssh
-  orig="$(head -n1 /Volumes/boot/cmdline.txt) cgroup_enable=cpuset cgroup_memory=1"
-  echo $orig > /Volumes/boot/cmdline.txt
+sudo touch /media/$USER/boot/ssh
+orig="$(sudo head -n1 /media/$USER/boot/cmdline.txt) cgroup_enable=cpuset cgroup_memory=1"
+echo $orig | sudo tee /media/$USER/boot/cmdline.txt
 
-  echo "Ejecting $disk"
-  sudo diskutil eject /dev/$disk
-  echo "All done!"
-else
-  sudo mkdir -p /media/raspberry
-  sudo mount /dev/${disk}p1 /media/raspberry
+sudo mkdir -p /media/$USER/rootfs
+sudo mount /dev/${disk}p2 /media/$USER/rootfs
 
-  sudo touch /media/raspberry/ssh
-  orig="$(sudo head -n1 /media/raspberry/cmdline.txt) cgroup_enable=cpuset cgroup_memory=1"
-  echo $orig | sudo tee /media/raspberry/cmdline.txt
+if [[ $isWifi == 1 ]]; then
+  echo "Enabling Wifi"
+  if [ ! -f .config/wifi ]; then
+    read -p "What is the wifi network? " -r < /dev/tty
+    echo "wifi=$REPLY" > .config/wifi
+    read -p "What is the wifi password? " -r < /dev/tty
+    echo "wifipwd=$REPLY" >> .config/wifi
+  fi
+  source .config/wifi
 
-  echo "Ejecting $disk"
-  sudo umount /media/raspberry
-  sudo rm -rf /media/raspberry
-  echo "All done!"
+  echo "auto wlan0
+allow-hotplug wlan0
+iface wlan0 inet dhcp
+  wpa-conf /etc/wpa_supplicant/wpa_supplicant.conf" | sudo tee /media/$USER/rootfs/etc/network/interfaces.d/wlan0
+  sudo chmod 666 /media/$USER/rootfs/etc/network/interfaces.d/wlan0
+  wpa_passphrase "$wifi" "$wifipwd" | sudo tee /media/$USER/rootfs/etc/wpa_supplicant/wpa_supplicant.conf
+  sudo chmod 666 /media/$USER/rootfs/etc/wpa_supplicant/wpa_supplicant.conf
 fi
+
+echo "Ejecting $disk"
+sudo umount /media/$USER/rootfs
+sudo umount /media/$USER/boot
+sudo rm -rf /media/$USER
+echo "All done!"
