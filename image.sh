@@ -1,6 +1,7 @@
 #!/bin/bash -e
 
 isWifi=0
+imageURL=https://downloads.raspberrypi.org/raspbian_lite/images/raspbian_lite-2019-09-30/2019-09-26-raspbian-buster-lite.zip
 
 while (( $# > 0 ))
 do
@@ -18,7 +19,7 @@ if [ ! -f /tmp/raspbian/.setup ]; then
   echo "Fetching image"
   mkdir -p /tmp/raspbian
 
-  curl -L https://downloads.raspberrypi.org/raspbian_lite/images/raspbian_lite-2017-07-05/2017-07-05-raspbian-jessie-lite.zip > /tmp/raspbian/image.zip
+  curl -L $imageURL > /tmp/raspbian/image.zip
   unzip /tmp/raspbian/image.zip -d /tmp/raspbian
   touch /tmp/raspbian/.setup
 fi
