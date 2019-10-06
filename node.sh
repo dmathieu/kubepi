@@ -46,15 +46,10 @@ EOF
 ./_kube.sh $USER $address
 
 kubectl config use-context raspberry
-kubectl config set-cluster master \
-  --kubeconfig=.config/node.conf \
-  --server=https://10.0.0.1:6443 \
-  --certificate-authority=./.config/pki/ca.crt \
-  --embed-certs=true
-kubectl config set-context master \
-  --kubeconfig=.config/node.conf \
-  --cluster=master
-kubectl config use-context master --kubeconfig=.config/node.conf
+kubectl -n kube-public get cm cluster-info -o yaml |
+  grep "kubeconfig:" -A11 |
+  grep "apiVersion" -A10 |
+  sed "s/    //" > .config/node.conf
 
 scp .config/node.conf $USER@$address:node.conf
 
