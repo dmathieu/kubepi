@@ -23,6 +23,10 @@ done
 
 ./_setup.sh $USER $address
 
+if [ $isIngress == 1 ]; then
+  ./_wifi.sh $USER $address
+fi
+
 ssh $USER@$address << EOF
 if [[ \$(sudo grep "$host" /etc/hostname) ]] ; then
   echo "Hostname already configured"

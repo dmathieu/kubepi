@@ -28,53 +28,31 @@ image=`find /tmp/raspbian/*.img`
 
 
 echo "Finding SD card"
-lsblk
+diskutil list
 
 read -p "Identify your sd card's disk. (e.g. disk5 or mmcblk0) " < /dev/tty
 echo
 disk=$REPLY
 
-shopt -s dotglob
-find /media/$USER/* -prune -type d | while IFS= read -r d; do 
-  echo "Unmounting $d"
-  sudo umount $d
-done
+echo "Unmounting $disk"
+diskutil unmountDisk /dev/$disk
 
 echo "Imaging $image to $disk"
-sudo dd bs=4M if=$image of=/dev/$disk conv=fsync
+sudo dd bs=4m if=$image of=/dev/$disk conv=sync
 
 echo "Enabling SSH"
-sudo mkdir -p /media/$USER/boot
-sudo mount /dev/${disk}p1 /media/$USER/boot
+sleep 2
+diskutil mountDisk /dev/$disk
+while [ ! -d /Volumes/boot ]; do
+  echo "Waiting for mount"
+  sleep 1
+done
 
-sudo touch /media/$USER/boot/ssh
-orig="$(sudo head -n1 /media/$USER/boot/cmdline.txt) cgroup_enable=cpuset cgroup_memory=1"
-echo $orig | sudo tee /media/$USER/boot/cmdline.txt
+touch /Volumes/boot/ssh
 
-sudo mkdir -p /media/$USER/rootfs
-sudo mount /dev/${disk}p2 /media/$USER/rootfs
-
-if [[ $isWifi == 1 ]]; then
-  echo "Enabling Wifi"
-  if [ ! -f .config/wifi ]; then
-    read -p "What is the wifi network? " -r < /dev/tty
-    echo "wifi=$REPLY" > .config/wifi
-    read -p "What is the wifi password? " -r < /dev/tty
-    echo "wifipwd=$REPLY" >> .config/wifi
-  fi
-  source .config/wifi
-
-  echo "auto wlan0
-allow-hotplug wlan0
-iface wlan0 inet dhcp
-  wpa-conf /etc/wpa_supplicant/wpa_supplicant.conf" | sudo tee /media/$USER/rootfs/etc/network/interfaces.d/wlan0
-  sudo chmod 666 /media/$USER/rootfs/etc/network/interfaces.d/wlan0
-  wpa_passphrase "$wifi" "$wifipwd" | sudo tee /media/$USER/rootfs/etc/wpa_supplicant/wpa_supplicant.conf
-  sudo chmod 666 /media/$USER/rootfs/etc/wpa_supplicant/wpa_supplicant.conf
-fi
+orig="$(sudo head -n1 /Volumes/boot/cmdline.txt) cgroup_enable=cpuset cgroup_memory=1"
+echo $orig | sudo tee /Volumes/boot/cmdline.txt
 
 echo "Ejecting $disk"
-sudo umount /media/$USER/rootfs
-sudo umount /media/$USER/boot
-sudo rm -rf /media/$USER
+sudo diskutil eject /dev/$disk
 echo "All done!"
