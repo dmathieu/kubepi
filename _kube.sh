@@ -9,6 +9,18 @@ if ! docker -v; then
   echo "Setting up docker"
   curl -sSL https://get.docker.com | sh
   sudo usermod $user -aG docker
+
+  echo "
+{
+  \"exec-opts\": [\"native.cgroupdriver=systemd\"],
+  \"log-driver\": \"json-file\",
+  \"log-opts\": {
+    \"max-size\": \"100m\"
+  },
+  \"storage-driver\": \"overlay2\"
+}" | sudo tee /etc/docker/daemon.json
+
+  sudo service docker restart
 fi
 
 sudo dphys-swapfile swapoff
